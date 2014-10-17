@@ -8,39 +8,47 @@ histogram = (function() {
   }
 
   histogram.prototype.init = function() {
-    this.values = d3.range(1000).map(d3.random.bates(10));
+    var i;
+    this.data = (function() {
+      var _i, _results;
+      _results = [];
+      for (i = _i = 0; _i <= 100; i = ++_i) {
+        _results.push(Math.floor(Math.random() * 100));
+      }
+      return _results;
+    })();
+    console.log(this.data);
   };
 
   histogram.prototype.initSVG = function() {
-    var bar, formatCount, height, margin, svg, width, x, xAxis, y;
-    formatCount = d3.format(",.0f");
-    margin = {
-      top: 10,
-      right: 30,
-      bottom: 30,
-      left: 30
-    };
-    width = 960 - margin.left - margin.right;
-    height = 500 - margin.top - margin.bottom;
-    x = d3.scale.linear().domain([0, 1]).range([0, width]);
-    this.data = d3.layout.histogram().bins(x.ticks(20))(this.values);
-    y = d3.scale.linear().domain([
-      0, d3.max(this.data, function(d) {
-        return d.y;
-      })
-    ]).range([height, 0]);
-    xAxis = d3.svg.axis().scale(x).orient("bottom");
-    svg = d3.select("body").append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    bar = svg.selectAll(".bar").data(this.data).enter().append("g").attr("class", "bar").attr("transform", function(d) {
-      return "translate(" + x(d.x) + "," + y(d.y) + ")";
+    var bar, barHeight, chart, width, x;
+    width = 420;
+    barHeight = 5;
+    x = d3.scale.linear().domain([0, d3.max(this.data)]).range([0, width]);
+    chart = d3.select("body").append("svg").attr("width", width).attr("height", barHeight * this.data.length);
+    bar = chart.selectAll("g").data(this.data).enter().append("g").attr("transform", function(d, i) {
+      return "translate(0," + i * barHeight + ")";
     });
-    bar.append("rect").attr("x", 1).attr("width", x(this.data[0].dx) - 1).attr("height", function(d) {
-      return height - y(d.y);
+    bar.append("rect").attr("width", x).attr("height", barHeight - 1);
+    bar.append("text").attr("x", function(d) {
+      return x(d) + 5;
+    }).attr("y", barHeight / 2).attr("dy", ".35em").text(function(d) {
+      return d;
     });
-    bar.append("text").attr("dy", ".75em").attr("y", 6).attr("x", x(this.data[0].dx) / 2).attr("text-anchor", "middle").text(function(d) {
-      return formatCount(d.y);
-    });
-    svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis);
+  };
+
+  histogram.prototype.render = function() {
+    var bar;
+    return bar = svg.selectAll(".bar").data(this.data);
+  };
+
+  histogram.prototype.getData = function() {
+    return this.data;
+  };
+
+  histogram.prototype.setData = function(data) {
+    this.data = data;
+    return this;
   };
 
   return histogram;
@@ -48,5 +56,7 @@ histogram = (function() {
 })();
 
 Histo = new histogram();
+
+console.log(Histo.getData());
 
 //# sourceMappingURL=histogram.js.map
