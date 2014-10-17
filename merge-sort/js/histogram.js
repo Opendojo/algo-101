@@ -4,11 +4,13 @@ var Histo, histogram;
 histogram = (function() {
   function histogram() {
     this.init();
-    this.initSVG();
+    this.render();
   }
 
   histogram.prototype.init = function() {
     var i;
+    this.width = 420;
+    this.barHeight = 5;
     this.data = (function() {
       var _i, _results;
       _results = [];
@@ -18,28 +20,26 @@ histogram = (function() {
       return _results;
     })();
     console.log(this.data);
-  };
-
-  histogram.prototype.initSVG = function() {
-    var bar, barHeight, chart, width, x;
-    width = 420;
-    barHeight = 5;
-    x = d3.scale.linear().domain([0, d3.max(this.data)]).range([0, width]);
-    chart = d3.select("body").append("svg").attr("width", width).attr("height", barHeight * this.data.length);
-    bar = chart.selectAll("g").data(this.data).enter().append("g").attr("transform", function(d, i) {
-      return "translate(0," + i * barHeight + ")";
-    });
-    bar.append("rect").attr("width", x).attr("height", barHeight - 1);
-    bar.append("text").attr("x", function(d) {
-      return x(d) + 5;
-    }).attr("y", barHeight / 2).attr("dy", ".35em").text(function(d) {
-      return d;
-    });
+    this.chart = d3.select("body").append("svg").attr("width", this.width).attr("height", this.barHeight * this.data.length);
   };
 
   histogram.prototype.render = function() {
-    var bar;
-    return bar = svg.selectAll(".bar").data(this.data);
+    var bar, x;
+    x = d3.scale.linear().domain([0, d3.max(this.data)]).range([0, this.width]);
+    bar = this.chart.selectAll("g").data(this.data);
+    bar.attr('class', 'update');
+    bar.enter().append("g").attr("class", "enter").attr("transform", (function(_this) {
+      return function(d, i) {
+        return "translate(0," + i * _this.barHeight + ")";
+      };
+    })(this));
+    bar.append("rect").attr("width", x).attr("height", this.barHeight - 1);
+    bar.append("text").attr("x", function(d) {
+      return x(d) + 5;
+    }).attr("y", this.barHeight / 2).attr("dy", ".35em").text(function(d) {
+      return d;
+    });
+    bar.exit().remove();
   };
 
   histogram.prototype.getData = function() {
@@ -58,5 +58,7 @@ histogram = (function() {
 Histo = new histogram();
 
 console.log(Histo.getData());
+
+window.histo = Histo;
 
 //# sourceMappingURL=histogram.js.map
